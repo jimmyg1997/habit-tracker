@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { format, startOfWeek, endOfWeek, eachDayOfInterval, isSameDay, addWeeks, subWeeks } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle2, Circle, ChevronLeft, ChevronRight, Calendar, AlertTriangle, Plus, Edit2, X, Trash2, GripVertical, Pencil, Settings, MoreVertical } from 'lucide-react';
