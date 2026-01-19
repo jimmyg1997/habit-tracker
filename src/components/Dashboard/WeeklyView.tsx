@@ -126,7 +126,7 @@ export default function WeeklyView({
   const [showCategoryCreator, setShowCategoryCreator] = useState(false);
   const [showAdvancedColumns, setShowAdvancedColumns] = useState<Record<string, boolean>>({});
   const [habitMenuOpen, setHabitMenuOpen] = useState<string | null>(null);
-  const [todayColumnPositions, setTodayColumnPositions] = useState<Record<string, { left: number; width: number }>>({});
+  const [todayColumnPositions, setTodayColumnPositions] = useState<Record<string, { left: number; width: number; height: number }>>({});
   const [draggedCategory, setDraggedCategory] = useState<string | null>(null);
   const [dragOverCategory, setDragOverCategory] = useState<string | null>(null);
   const [draggedHabit, setDraggedHabit] = useState<Habit | null>(null);
@@ -1333,7 +1333,7 @@ export default function WeeklyView({
                         left: `${position.left}px`,
                         top: 0,
                         width: `${position.width}px`,
-                        height: '100%',
+                        height: position.height > 0 ? `${position.height}px` : '100%',
                         borderRadius: '4px',
                         zIndex: 5,
                       }}
