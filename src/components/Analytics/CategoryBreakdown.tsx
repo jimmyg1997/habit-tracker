@@ -8,11 +8,10 @@ interface CategoryBreakdownProps {
 }
 
 export default function CategoryBreakdown({ habits, completions }: CategoryBreakdownProps) {
-  const categoryStats = new Map<string, { total: number; completed: number; color: string }>();
+  const categoryStats = new Map<string, { completed: number; color: string }>();
 
   habits.forEach((habit) => {
-    const stats = categoryStats.get(habit.category) || { total: 0, completed: 0, color: '#6366F1' };
-    stats.total++;
+    const stats = categoryStats.get(habit.category) || { completed: 0, color: '#6366F1' };
     // Count all completed instances for this habit
     const habitCompletions = completions.filter((c) => c.habit_id === habit.id && c.completed);
     stats.completed += habitCompletions.length;
@@ -23,10 +22,8 @@ export default function CategoryBreakdown({ habits, completions }: CategoryBreak
     .map(([category, stats]) => ({
       category: extractNameFromCategory(category),
       completed: stats.completed,
-      total: stats.total,
-      percentage: stats.total > 0 ? Math.round((stats.completed / stats.total) * 100) : 0,
     }))
-    .filter(item => item.total > 0) // Only show categories with habits
+    .filter(item => item.completed > 0 || habits.some(h => extractNameFromCategory(h.category) === item.category)) // Show all categories with habits
     .sort((a, b) => b.completed - a.completed); // Sort by completed count
 
   return (
@@ -52,9 +49,10 @@ export default function CategoryBreakdown({ habits, completions }: CategoryBreak
               borderRadius: '8px',
             }}
             formatter={(value: number, name: string, props: any) => [
-              `${value} / ${props.payload.total} (${props.payload.percentage}%)`,
+              `${value} completions`,
               'Completed'
             ]}
+            labelFormatter={(label) => `${label}`}
           />
           <Bar dataKey="completed" fill="#6366F1" radius={[0, 4, 4, 0]}>
             {data.map((entry, index) => (

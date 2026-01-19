@@ -1,4 +1,5 @@
 import { Trophy, Flame, TrendingUp, Target } from 'lucide-react';
+import { format, parseISO, subDays, isAfter, isBefore } from 'date-fns';
 import type { User, Habit, HabitCompletion, Achievement } from '../../types';
 
 interface AnalyticsOverviewProps {
@@ -29,6 +30,50 @@ export default function AnalyticsOverview({
   const xpForNextLevel = (user.current_level + 1) ** 2 * 100;
   const xpProgress = ((user.total_xp % (user.current_level ** 2 * 100)) / (xpForNextLevel - user.current_level ** 2 * 100)) * 100;
 
+  // Calculate best streak from completions data
+  const calculateBestStreak = () => {
+    if (completions.length === 0) return 0;
+    
+    // Get all unique dates with completions, sorted
+    const datesWithCompletions = new Set<string>();
+    completions.forEach((c) => {
+      if (c.completed) {
+        datesWithCompletions.add(c.completion_date);
+      }
+    });
+    
+    if (datesWithCompletions.size === 0) return 0;
+    
+    const sortedDates = Array.from(datesWithCompletions)
+      .map(d => parseISO(d))
+      .sort((a, b) => a.getTime() - b.getTime());
+    
+    let bestStreak = 0;
+    let currentStreak = 1;
+    
+    for (let i = 1; i < sortedDates.length; i++) {
+      const prevDate = sortedDates[i - 1];
+      const currDate = sortedDates[i];
+      const daysDiff = Math.floor((currDate.getTime() - prevDate.getTime()) / (1000 * 60 * 60 * 24));
+      
+      if (daysDiff === 1) {
+        // Consecutive day
+        currentStreak++;
+      } else {
+        // Gap found, update best streak and reset
+        bestStreak = Math.max(bestStreak, currentStreak);
+        currentStreak = 1;
+      }
+    }
+    
+    // Check final streak
+    bestStreak = Math.max(bestStreak, currentStreak);
+    
+    return bestStreak;
+  };
+
+  const bestStreak = calculateBestStreak();
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
       <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 p-6">
@@ -58,7 +103,7 @@ export default function AnalyticsOverview({
         </div>
         <p className="text-sm text-gray-600 dark:text-gray-400">Current Streak</p>
         <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
-          Best: {user.longest_streak} days
+          Best: {bestStreak} days
         </p>
       </div>
 
