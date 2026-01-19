@@ -124,7 +124,7 @@ export default function WeeklyView({
   const [showAddMenu, setShowAddMenu] = useState<string | null>(null);
   const [quickAddInputs, setQuickAddInputs] = useState<Record<string, { name: string; emoji: string; minutes: number; importance: HabitImportance }>>({});
   const [showCategoryCreator, setShowCategoryCreator] = useState(false);
-  const [showAdvancedColumns, setShowAdvancedColumns] = useState(false);
+  const [showAdvancedColumns, setShowAdvancedColumns] = useState<Record<string, boolean>>({});
   const [habitMenuOpen, setHabitMenuOpen] = useState<string | null>(null);
   const [draggedCategory, setDraggedCategory] = useState<string | null>(null);
   const [dragOverCategory, setDragOverCategory] = useState<string | null>(null);
@@ -753,11 +753,11 @@ export default function WeeklyView({
                   </div>
                   <div className="flex items-center gap-2">
                     <button
-                      onClick={() => setShowAdvancedColumns(!showAdvancedColumns)}
-                      className="p-1.5 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-slate-700 rounded transition-colors"
-                      title={showAdvancedColumns ? "Hide Priority & KPI" : "Show Priority & KPI"}
+                      onClick={() => setShowAdvancedColumns({ ...showAdvancedColumns, [category]: !showAdvancedColumns[category] })}
+                      className="p-1 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-slate-700 rounded transition-colors"
+                      title={showAdvancedColumns[category] ? "Hide Priority & KPI" : "Show Priority & KPI"}
                     >
-                      <Settings className="w-4 h-4" />
+                      <Settings className="w-3.5 h-3.5" />
                     </button>
                     {onCategoryRename && (
                       <button
@@ -848,7 +848,7 @@ export default function WeeklyView({
                       >
                         Habit
                       </th>
-                      {showAdvancedColumns && (
+                      {showAdvancedColumns[category] && (
                         <>
                           <th className={`text-center px-2 py-2 text-xs font-semibold text-gray-700 dark:text-gray-300 bg-gradient-to-br ${categoryColor.bg} dark:bg-gradient-to-br ${categoryColor.dark}`} style={{ width: '70px', minWidth: '70px', maxWidth: '70px' }}>
                             Priority
@@ -874,9 +874,9 @@ export default function WeeklyView({
                             key={day.toISOString()}
                             className={`text-center px-1 py-2 text-xs font-semibold text-gray-700 dark:text-gray-300 bg-gradient-to-br ${categoryColor.bg} dark:bg-gradient-to-br ${categoryColor.dark} relative`}
                             style={{ 
-                              width: isToday ? '60px' : '50px', 
-                              minWidth: isToday ? '60px' : '50px', 
-                              maxWidth: isToday ? '60px' : '50px',
+                              width: '50px', 
+                              minWidth: '50px', 
+                              maxWidth: '50px',
                               position: 'relative'
                             }}
                           >
@@ -1024,7 +1024,7 @@ export default function WeeklyView({
                           </td>
 
                           {/* Priority/Importance Column - Editable (Hidden by default) */}
-                          {showAdvancedColumns && (
+                          {showAdvancedColumns[category] && (
                           <td className={`px-2 py-2 text-center bg-gradient-to-br ${categoryColor.bg} dark:bg-gradient-to-br ${categoryColor.dark}`} style={{ width: '70px', minWidth: '70px', maxWidth: '70px' }}>
                             {editingHabit?.habitId === habit.id && editingHabit?.field === 'importance' ? (
                               <div className="flex items-center gap-1 justify-center">
@@ -1061,7 +1061,7 @@ export default function WeeklyView({
                           )}
 
                           {/* KPI Column - Editable (Hidden by default) */}
-                          {showAdvancedColumns && (
+                          {showAdvancedColumns[category] && (
                           <td className={`px-2 py-2 text-center bg-gradient-to-br ${categoryColor.bg} dark:bg-gradient-to-br ${categoryColor.dark}`} style={{ width: '60px', minWidth: '60px', maxWidth: '60px' }}>
                             {isEditingKpi ? (
                               <div className="flex items-center gap-1 justify-center">
@@ -1170,7 +1170,7 @@ export default function WeeklyView({
                               <td
                                 key={dateStr}
                                 className={`text-center px-1 py-2 bg-gradient-to-br ${categoryColor.bg} dark:bg-gradient-to-br ${categoryColor.dark} relative`}
-                                style={{ position: 'relative', pointerEvents: 'auto', width: isToday ? '60px' : '50px', minWidth: isToday ? '60px' : '50px', maxWidth: isToday ? '60px' : '50px' }}
+                                style={{ position: 'relative', pointerEvents: 'auto', width: '50px', minWidth: '50px', maxWidth: '50px' }}
                                 data-day-column={isToday ? 'today' : undefined}
                               >
                                 <div className="flex flex-col items-center gap-0.5 relative z-10">
@@ -1213,7 +1213,7 @@ export default function WeeklyView({
                     })}
                     {/* Quick Add Row */}
                     <tr className={`border-t-2 border-dashed ${categoryColor.border} bg-gradient-to-br ${categoryColor.bg} dark:bg-gradient-to-br ${categoryColor.dark}`}>
-                      <td colSpan={(showAdvancedColumns ? 8 : 6) + weekDays.length} className={`px-3 py-2 bg-gradient-to-br ${categoryColor.bg} dark:bg-gradient-to-br ${categoryColor.dark}`}>
+                      <td colSpan={(showAdvancedColumns[category] ? 8 : 6) + weekDays.length} className={`px-3 py-2 bg-gradient-to-br ${categoryColor.bg} dark:bg-gradient-to-br ${categoryColor.dark}`}>
                         <form
                           onSubmit={(e) => {
                             e.preventDefault();
@@ -1308,15 +1308,19 @@ export default function WeeklyView({
                   const todayIndex = weekDays.findIndex(day => isSameDay(day, new Date()));
                   
                   // Calculate left offset: Habit (180) + Est (70) + Act (60) + % (60) + Priority (70 if shown) + KPI (60 if shown) + day columns before today
+                  // Note: Using actual rendered widths from the table
                   const habitColWidth = 180;
                   const estColWidth = 70;
                   const actColWidth = 60;
                   const percentColWidth = 60;
-                  const priorityColWidth = showAdvancedColumns ? 70 : 0;
-                  const kpiColWidth = showAdvancedColumns ? 60 : 0;
-                  const dayColWidth = 50;
+                  const priorityColWidth = showAdvancedColumns[category] ? 70 : 0;
+                  const kpiColWidth = showAdvancedColumns[category] ? 60 : 0;
+                  const dayColWidth = 50; // Standard day column width (all days use 50px, header shows 60px for today but cells use 50px)
                   
-                  const leftOffset = habitColWidth + estColWidth + actColWidth + percentColWidth + priorityColWidth + kpiColWidth + (todayIndex * dayColWidth);
+                  // Calculate the left position: sum of all columns before the current day column
+                  // Add small adjustments for borders/padding (approximately 1px per column border)
+                  const borderAdjustment = 0; // Table uses borderCollapse: separate, so borders are included in width
+                  const leftOffset = habitColWidth + estColWidth + actColWidth + percentColWidth + priorityColWidth + kpiColWidth + (todayIndex * dayColWidth) + borderAdjustment;
                   
                   return (
                     <div
@@ -1324,7 +1328,7 @@ export default function WeeklyView({
                       style={{
                         left: `${leftOffset}px`,
                         top: 0,
-                        width: '60px',
+                        width: '50px', // Match the actual cell width
                         height: '100%',
                         borderRadius: '4px',
                         zIndex: 5,
