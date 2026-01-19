@@ -125,6 +125,7 @@ export default function WeeklyView({
   const [quickAddInputs, setQuickAddInputs] = useState<Record<string, { name: string; emoji: string; minutes: number; importance: HabitImportance }>>({});
   const [showCategoryCreator, setShowCategoryCreator] = useState(false);
   const [showAdvancedColumns, setShowAdvancedColumns] = useState(false);
+  const [habitMenuOpen, setHabitMenuOpen] = useState<string | null>(null);
   const [draggedCategory, setDraggedCategory] = useState<string | null>(null);
   const [dragOverCategory, setDragOverCategory] = useState<string | null>(null);
   const [draggedHabit, setDraggedHabit] = useState<Habit | null>(null);
