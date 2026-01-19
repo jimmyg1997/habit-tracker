@@ -41,38 +41,39 @@ export function useGamification() {
   async function checkAndUpdateStreaks() {
     if (!user) return;
 
-    const today = format(new Date(), 'yyyy-MM-dd');
-    const yesterdayDate = subDays(new Date(), 1);
-    const yesterday = format(startOfDay(yesterdayDate), 'yyyy-MM-dd');
-
-    const [todayCompletions, yesterdayCompletions] = await Promise.all([
-      getCompletionsForDate(user.id, today),
-      getCompletionsForDate(user.id, yesterday),
-    ]);
-
-    const todayCompleted = todayCompletions.some((c) => c.completed);
-    const yesterdayCompleted = yesterdayCompletions.some((c) => c.completed);
-
-    let newStreak = user.current_streak;
-    let newLongestStreak = user.longest_streak;
-
-    if (todayCompleted) {
-      if (yesterdayCompleted || user.current_streak === 0) {
-        newStreak = user.current_streak + 1;
+    // Recalculate streak from scratch by checking consecutive days backwards
+    let streak = 0;
+    let currentDate = new Date();
+    
+    while (true) {
+      const dateStr = format(currentDate, 'yyyy-MM-dd');
+      const dayCompletions = await getCompletionsForDate(user.id, dateStr);
+      const hasCompletion = dayCompletions.some((c) => c.completed);
+      
+      if (hasCompletion) {
+        streak++;
+        currentDate = subDays(currentDate, 1);
       } else {
-        newStreak = 1; // Reset streak
+        // If today has no completion, don't count it
+        if (dateStr === format(new Date(), 'yyyy-MM-dd')) {
+          // Check yesterday
+          const yesterday = subDays(new Date(), 1);
+          const yesterdayStr = format(yesterday, 'yyyy-MM-dd');
+          const yesterdayCompletions = await getCompletionsForDate(user.id, yesterdayStr);
+          if (yesterdayCompletions.some((c) => c.completed)) {
+            // Yesterday had completion, so streak continues from yesterday
+            streak = 0; // Today doesn't count, so streak is 0 until today is completed
+          }
+        }
+        break;
       }
-    } else if (!yesterdayCompleted && user.current_streak > 0) {
-      newStreak = 0; // Streak broken
     }
 
-    if (newStreak > user.longest_streak) {
-      newLongestStreak = newStreak;
-    }
+    const newLongestStreak = Math.max(user.longest_streak, streak);
 
-    if (newStreak !== user.current_streak || newLongestStreak !== user.longest_streak) {
+    if (streak !== user.current_streak || newLongestStreak !== user.longest_streak) {
       await updateUser(user.id, {
-        current_streak: newStreak,
+        current_streak: streak,
         longest_streak: newLongestStreak,
       });
       if (loadUser && user) {

@@ -641,8 +641,10 @@ export default function Dashboard() {
 
   const completedCount = getCompletedCount();
   const totalPossible = getTotalPossible();
+  // Ensure completed count never exceeds total possible
+  const adjustedCompletedCount = Math.min(completedCount, totalPossible);
   const completionPercentage =
-    totalPossible > 0 ? Math.round((completedCount / totalPossible) * 100) : 0;
+    totalPossible > 0 ? Math.round((adjustedCompletedCount / totalPossible) * 100) : 0;
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-slate-900">
@@ -650,7 +652,7 @@ export default function Dashboard() {
         user={user}
         selectedDate={viewMode === 'weekly' ? selectedWeek : selectedDate}
         completionPercentage={completionPercentage}
-        completedCount={completedCount}
+        completedCount={adjustedCompletedCount}
         totalCount={totalPossible}
         viewMode={viewMode}
       />

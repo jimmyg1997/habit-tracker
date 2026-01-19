@@ -298,7 +298,7 @@ export default function HealthMetricsPanel({
                 <td className="px-3 py-3 sticky left-0 bg-gradient-to-br from-rose-50 to-pink-50 dark:from-rose-950/30 dark:to-pink-950/30 z-10">
                   <div className="flex items-center gap-2 text-sm font-medium text-gray-900 dark:text-white">
                     <Moon className="w-4 h-4" />
-                    Sleep Notes
+                    Mood Notes
                   </div>
                 </td>
                 {weekDays.map((day) => {
@@ -477,7 +477,7 @@ export default function HealthMetricsPanel({
         <div>
           <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block flex items-center gap-2">
             <Moon className="w-4 h-4" />
-            Sleep Note
+            Mood Note
           </label>
           <textarea
             value={localSleepNotes.get('daily') !== undefined ? localSleepNotes.get('daily') : (metrics?.sleep_note ?? '')}

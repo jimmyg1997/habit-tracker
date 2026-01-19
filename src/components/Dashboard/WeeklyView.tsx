@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { format, startOfWeek, endOfWeek, eachDayOfInterval, isSameDay, addWeeks, subWeeks } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CheckCircle2, Circle, ChevronLeft, ChevronRight, Calendar, AlertTriangle, Plus, Edit2, X, Trash2, GripVertical, Pencil } from 'lucide-react';
+import { CheckCircle2, Circle, ChevronLeft, ChevronRight, Calendar, AlertTriangle, Plus, Edit2, X, Trash2, GripVertical, Pencil, Settings } from 'lucide-react';
 import type { Habit, HabitCompletion, HabitImportance } from '../../types';
 import HabitNote from './HabitNote';
 import TimeSlider from './TimeSlider';
@@ -124,6 +124,7 @@ export default function WeeklyView({
   const [showAddMenu, setShowAddMenu] = useState<string | null>(null);
   const [quickAddInputs, setQuickAddInputs] = useState<Record<string, { name: string; emoji: string; minutes: number; importance: HabitImportance }>>({});
   const [showCategoryCreator, setShowCategoryCreator] = useState(false);
+  const [showAdvancedColumns, setShowAdvancedColumns] = useState(false);
   const [draggedCategory, setDraggedCategory] = useState<string | null>(null);
   const [dragOverCategory, setDragOverCategory] = useState<string | null>(null);
   const [draggedHabit, setDraggedHabit] = useState<Habit | null>(null);
@@ -726,6 +727,13 @@ export default function WeeklyView({
                     <h3 className="text-base font-semibold text-gray-900 dark:text-white flex items-center gap-2">
                       <span className="text-lg">{extractEmojiFromCategory(category)}</span>
                       {extractNameFromCategory(category)}
+                      <button
+                        onClick={() => setShowAdvancedColumns(!showAdvancedColumns)}
+                        className="ml-2 p-1.5 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-slate-700 rounded transition-colors"
+                        title={showAdvancedColumns ? "Hide Priority & KPI" : "Show Priority & KPI"}
+                      >
+                        <Settings className="w-4 h-4" />
+                      </button>
                     </h3>
                     {onCategoryRename && (
                       <button
@@ -816,12 +824,16 @@ export default function WeeklyView({
                       >
                         Habit
                       </th>
-                      <th className={`text-center px-2 py-2 text-xs font-semibold text-gray-700 dark:text-gray-300 bg-gradient-to-br ${categoryColor.bg} dark:bg-gradient-to-br ${categoryColor.dark}`} style={{ width: '70px', minWidth: '70px', maxWidth: '70px' }}>
-                        Priority
-                      </th>
-                      <th className={`text-center px-2 py-2 text-xs font-semibold text-gray-700 dark:text-gray-300 bg-gradient-to-br ${categoryColor.bg} dark:bg-gradient-to-br ${categoryColor.dark}`} style={{ width: '60px', minWidth: '60px', maxWidth: '60px' }}>
-                        KPI
-                      </th>
+                      {showAdvancedColumns && (
+                        <>
+                          <th className={`text-center px-2 py-2 text-xs font-semibold text-gray-700 dark:text-gray-300 bg-gradient-to-br ${categoryColor.bg} dark:bg-gradient-to-br ${categoryColor.dark}`} style={{ width: '70px', minWidth: '70px', maxWidth: '70px' }}>
+                            Priority
+                          </th>
+                          <th className={`text-center px-2 py-2 text-xs font-semibold text-gray-700 dark:text-gray-300 bg-gradient-to-br ${categoryColor.bg} dark:bg-gradient-to-br ${categoryColor.dark}`} style={{ width: '60px', minWidth: '60px', maxWidth: '60px' }}>
+                            KPI
+                          </th>
+                        </>
+                      )}
                       <th className={`text-center px-2 py-2 text-xs font-semibold text-gray-700 dark:text-gray-300 bg-gradient-to-br ${categoryColor.bg} dark:bg-gradient-to-br ${categoryColor.dark}`} style={{ width: '70px', minWidth: '70px', maxWidth: '70px' }}>
                         Est.
                       </th>
@@ -835,7 +847,7 @@ export default function WeeklyView({
                         <th
                           key={day.toISOString()}
                           className={`text-center px-1 py-2 text-xs font-semibold text-gray-700 dark:text-gray-300 bg-gradient-to-br ${categoryColor.bg} dark:bg-gradient-to-br ${categoryColor.dark} ${
-                            isSameDay(day, new Date()) ? 'ring-2 ring-primary/30' : ''
+                            isSameDay(day, new Date()) ? 'ring-2 ring-primary shadow-lg bg-primary/10 dark:bg-primary/20' : ''
                           }`}
                           style={{ width: '50px', minWidth: '50px', maxWidth: '50px' }}
                         >
@@ -954,7 +966,8 @@ export default function WeeklyView({
                             </div>
                           </td>
 
-                          {/* Priority/Importance Column - Editable */}
+                          {/* Priority/Importance Column - Editable (Hidden by default) */}
+                          {showAdvancedColumns && (
                           <td className={`px-2 py-2 text-center bg-gradient-to-br ${categoryColor.bg} dark:bg-gradient-to-br ${categoryColor.dark}`} style={{ width: '70px', minWidth: '70px', maxWidth: '70px' }}>
                             {editingHabit?.habitId === habit.id && editingHabit?.field === 'importance' ? (
                               <div className="flex items-center gap-1 justify-center">
@@ -988,8 +1001,10 @@ export default function WeeklyView({
                               </button>
                             )}
                           </td>
+                          )}
 
-                          {/* KPI Column - Editable */}
+                          {/* KPI Column - Editable (Hidden by default) */}
+                          {showAdvancedColumns && (
                           <td className={`px-2 py-2 text-center bg-gradient-to-br ${categoryColor.bg} dark:bg-gradient-to-br ${categoryColor.dark}`} style={{ width: '60px', minWidth: '60px', maxWidth: '60px' }}>
                             {isEditingKpi ? (
                               <div className="flex items-center gap-1 justify-center">
@@ -1020,6 +1035,7 @@ export default function WeeklyView({
                               </button>
                             )}
                           </td>
+                          )}
 
                           {/* Estimated Column - Editable */}
                           <td className={`px-2 py-2 text-center bg-gradient-to-br ${categoryColor.bg} dark:bg-gradient-to-br ${categoryColor.dark}`} style={{ width: '70px', minWidth: '70px', maxWidth: '70px' }}>
@@ -1096,7 +1112,7 @@ export default function WeeklyView({
                             return (
                               <td
                                 key={dateStr}
-                                className={`text-center px-1 py-2 bg-gradient-to-br ${categoryColor.bg} dark:bg-gradient-to-br ${categoryColor.dark} ${isToday ? 'ring-2 ring-primary/30' : ''}`}
+                                className={`text-center px-1 py-2 bg-gradient-to-br ${categoryColor.bg} dark:bg-gradient-to-br ${categoryColor.dark} ${isToday ? 'ring-2 ring-primary shadow-lg bg-primary/10 dark:bg-primary/20' : ''}`}
                                 style={{ position: 'relative', pointerEvents: 'auto', width: '50px', minWidth: '50px', maxWidth: '50px' }}
                               >
                                 <div className="flex flex-col items-center gap-0.5">
