@@ -6,6 +6,7 @@ import type { User as UserType } from '../../types';
 import { useAuth } from '../../hooks/useAuth';
 import toast from 'react-hot-toast';
 import LogsViewer from './LogsViewer';
+import XPLevelInfo from './XPLevelInfo';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface HeaderProps {
@@ -61,10 +62,13 @@ export default function Header({
             <div className="hidden md:flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
               <span>{format(selectedDate, 'EEEE, MMMM d, yyyy')}</span>
               {user && (
-                <div className="flex items-center gap-2">
-                  <Flame className="w-4 h-4 text-warning" />
-                  <span className="font-semibold">{user.current_streak} day streak</span>
-                </div>
+                <>
+                  <div className="flex items-center gap-2">
+                    <Flame className="w-4 h-4 text-warning" />
+                    <span className="font-semibold">{user.current_streak} day streak</span>
+                  </div>
+                  <XPLevelInfo user={user} />
+                </>
               )}
             </div>
           </div>

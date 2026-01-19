@@ -6,6 +6,7 @@ import { Moon, Sun, Download, LogOut, User, Mail } from 'lucide-react';
 import toast from 'react-hot-toast';
 import Header from '../components/Dashboard/Header';
 import HabitManager from '../components/Profile/HabitManager';
+import BadgesDisplay from '../components/Dashboard/BadgesDisplay';
 import { exportToExcel } from '../utils/export';
 
 interface ProfileProps {
@@ -150,6 +151,11 @@ export default function Profile({ updateTheme }: ProfileProps) {
 
           {/* Habit Management */}
           <HabitManager />
+
+          {/* Badges & Achievements */}
+          <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 p-6">
+            <BadgesDisplay userId={user.id} />
+          </div>
 
           {/* Data Export */}
           <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 p-6">

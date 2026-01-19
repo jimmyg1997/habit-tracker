@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { LineChart, Line, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { format, parseISO, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from 'date-fns';
 import { getHealthMetricsForWeek } from '../../lib/db';
 import type { HealthMetrics } from '../../types';
@@ -147,50 +147,75 @@ export default function HealthMetricsAnalytics({ userId, timeRange }: HealthMetr
       {/* Line Charts */}
       <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 p-6">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Health Metrics Over Time</h3>
-        <ResponsiveContainer width="100%" height={300}>
-          <LineChart data={chartData}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-            <XAxis dataKey="date" stroke="#6b7280" />
-            <YAxis stroke="#6b7280" />
+        <ResponsiveContainer width="100%" height={350}>
+          <LineChart data={chartData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" opacity={0.3} />
+            <XAxis 
+              dataKey="date" 
+              stroke="#6b7280" 
+              tick={{ fill: '#6b7280', fontSize: 12 }}
+              angle={-45}
+              textAnchor="end"
+              height={60}
+            />
+            <YAxis 
+              stroke="#6b7280" 
+              tick={{ fill: '#6b7280', fontSize: 12 }}
+              domain={[0, 5]}
+              label={{ value: 'Rating (1-5)', angle: -90, position: 'insideLeft', style: { fill: '#6b7280' } }}
+            />
             <Tooltip 
               contentStyle={{ 
-                backgroundColor: 'white', 
+                backgroundColor: 'rgba(255, 255, 255, 0.95)', 
                 border: '1px solid #e5e7eb',
-                borderRadius: '8px'
-              }} 
+                borderRadius: '8px',
+                boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
+              }}
+              labelStyle={{ color: '#1f2937', fontWeight: 'bold' }}
             />
-            <Legend />
+            <Legend 
+              wrapperStyle={{ paddingTop: '20px' }}
+              iconType="line"
+            />
             <Line 
               type="monotone" 
               dataKey="sleepQuality" 
               stroke="#8b5cf6" 
-              strokeWidth={2}
-              dot={{ r: 4 }}
-              name="Sleep Quality (1-5)"
+              strokeWidth={3}
+              dot={{ r: 5, fill: '#8b5cf6' }}
+              activeDot={{ r: 7 }}
+              name="Sleep Quality"
+              connectNulls
             />
             <Line 
               type="monotone" 
               dataKey="mood" 
               stroke="#10b981" 
-              strokeWidth={2}
-              dot={{ r: 4 }}
-              name="Mood (1-5)"
+              strokeWidth={3}
+              dot={{ r: 5, fill: '#10b981' }}
+              activeDot={{ r: 7 }}
+              name="Mood"
+              connectNulls
             />
             <Line 
               type="monotone" 
               dataKey="nutrition" 
               stroke="#f59e0b" 
-              strokeWidth={2}
-              dot={{ r: 4 }}
-              name="Nutrition (1-5)"
+              strokeWidth={3}
+              dot={{ r: 5, fill: '#f59e0b' }}
+              activeDot={{ r: 7 }}
+              name="Nutrition"
+              connectNulls
             />
             <Line 
               type="monotone" 
               dataKey="hydration" 
               stroke="#3b82f6" 
-              strokeWidth={2}
-              dot={{ r: 4 }}
+              strokeWidth={3}
+              dot={{ r: 5, fill: '#3b82f6' }}
+              activeDot={{ r: 7 }}
               name="Hydration (glasses)"
+              connectNulls
             />
           </LineChart>
         </ResponsiveContainer>
@@ -199,25 +224,59 @@ export default function HealthMetricsAnalytics({ userId, timeRange }: HealthMetr
       {/* Sleep Hours Chart */}
       <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 p-6">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Sleep Hours Over Time</h3>
-        <ResponsiveContainer width="100%" height={250}>
-          <LineChart data={chartData}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-            <XAxis dataKey="date" stroke="#6b7280" />
-            <YAxis stroke="#6b7280" domain={[0, 12]} />
+        <ResponsiveContainer width="100%" height={350}>
+          <LineChart data={chartData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+            <defs>
+              <linearGradient id="sleepGradient" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="#6366f1" stopOpacity={0.3}/>
+                <stop offset="95%" stopColor="#6366f1" stopOpacity={0}/>
+              </linearGradient>
+            </defs>
+            <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" opacity={0.3} />
+            <XAxis 
+              dataKey="date" 
+              stroke="#6b7280" 
+              tick={{ fill: '#6b7280', fontSize: 12 }}
+              angle={-45}
+              textAnchor="end"
+              height={60}
+            />
+            <YAxis 
+              stroke="#6b7280" 
+              tick={{ fill: '#6b7280', fontSize: 12 }}
+              domain={[0, 12]}
+              label={{ value: 'Hours', angle: -90, position: 'insideLeft', style: { fill: '#6b7280' } }}
+            />
             <Tooltip 
               contentStyle={{ 
-                backgroundColor: 'white', 
+                backgroundColor: 'rgba(255, 255, 255, 0.95)', 
                 border: '1px solid #e5e7eb',
-                borderRadius: '8px'
-              }} 
+                borderRadius: '8px',
+                boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
+              }}
+              labelStyle={{ color: '#1f2937', fontWeight: 'bold' }}
+              formatter={(value: any) => [`${value} hours`, 'Sleep']}
+            />
+            <Area 
+              type="monotone" 
+              dataKey="sleepHours" 
+              stroke="#6366f1" 
+              strokeWidth={3}
+              fill="url(#sleepGradient)"
+              dot={{ r: 5, fill: '#6366f1' }}
+              activeDot={{ r: 7 }}
+              name="Sleep Hours"
+              connectNulls
             />
             <Line 
               type="monotone" 
               dataKey="sleepHours" 
               stroke="#6366f1" 
-              strokeWidth={2}
-              dot={{ r: 4 }}
+              strokeWidth={3}
+              dot={{ r: 5, fill: '#6366f1' }}
+              activeDot={{ r: 7 }}
               name="Sleep Hours"
+              connectNulls
             />
           </LineChart>
         </ResponsiveContainer>

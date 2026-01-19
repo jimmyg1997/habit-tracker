@@ -191,7 +191,7 @@ export default function Dashboard() {
       const isToday = date === format(new Date(), 'yyyy-MM-dd');
       if (completed && isToday) {
         await awardXP(10);
-        await checkAchievements();
+        await checkAchievements(habits, completions);
       }
 
       if (isToday) {
@@ -617,10 +617,12 @@ export default function Dashboard() {
       // Count ALL completions, not unique habits
       return weekCompletions.length;
     } else {
+      // For daily view, count unique habits completed (prevent duplicates)
       const todayCompletions = completions.filter(
         (c) => c.completion_date === dateString && c.completed
       );
-      return todayCompletions.length;
+      const uniqueHabits = new Set(todayCompletions.map(c => c.habit_id));
+      return uniqueHabits.size;
     }
   };
 

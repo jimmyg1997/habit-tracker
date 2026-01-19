@@ -81,7 +81,7 @@ export function useGamification() {
     }
   }
 
-  async function checkAchievements() {
+  async function checkAchievements(habits: any[] = [], completions: any[] = []) {
     if (!user) return;
 
     const existingAchievements = await getAchievements(user.id);
@@ -89,7 +89,7 @@ export function useGamification() {
 
     const today = format(new Date(), 'yyyy-MM-dd');
     const todayCompletions = await getCompletionsForDate(user.id, today);
-    const allCompletions = await getCompletionsForDate(user.id, today);
+    const allCompletions = completions.length > 0 ? completions : await getCompletionsForDate(user.id, today);
 
     // First Day achievement
     if (!earnedTypes.has('first_day') && todayCompletions.some((c) => c.completed)) {
@@ -111,10 +111,69 @@ export function useGamification() {
       toast.success('Achievement unlocked: Week Warrior! 🔥');
     }
 
+    // Month Master (30 day streak)
+    if (!earnedTypes.has('month_master') && user.current_streak >= 30) {
+      await createAchievement({
+        user_id: user.id,
+        badge_type: 'month_master',
+        earned_at: new Date().toISOString(),
+      });
+      toast.success('Achievement unlocked: Month Master! 🌟');
+    }
+
     // Perfect Day (100% completion)
-    // This would need to check all habits for the day
-    // For now, we'll check if all completions are done
-    // In a real implementation, you'd compare against total habits
+    if (!earnedTypes.has('perfect_day') && habits.length > 0) {
+      const completedToday = todayCompletions.filter(c => c.completed).length;
+      if (completedToday >= habits.length) {
+        await createAchievement({
+          user_id: user.id,
+          badge_type: 'perfect_day',
+          earned_at: new Date().toISOString(),
+        });
+        toast.success('Achievement unlocked: Perfect Day! ✨');
+      }
+    }
+
+    // Century Club (100 total completions)
+    if (!earnedTypes.has('century_club')) {
+      const totalCompletions = allCompletions.filter(c => c.completed).length;
+      if (totalCompletions >= 100) {
+        await createAchievement({
+          user_id: user.id,
+          badge_type: 'century_club',
+          earned_at: new Date().toISOString(),
+        });
+        toast.success('Achievement unlocked: Century Club! 🏆');
+      }
+    }
+
+    // Level achievements
+    if (!earnedTypes.has('level_10') && user.current_level >= 10) {
+      await createAchievement({
+        user_id: user.id,
+        badge_type: 'level_10',
+        earned_at: new Date().toISOString(),
+      });
+      toast.success('Achievement unlocked: Level 10! 🎯');
+    }
+
+    if (!earnedTypes.has('level_25') && user.current_level >= 25) {
+      await createAchievement({
+        user_id: user.id,
+        badge_type: 'level_25',
+        earned_at: new Date().toISOString(),
+      });
+      toast.success('Achievement unlocked: Level 25! 🎯');
+    }
+
+    if (!earnedTypes.has('level_50') && user.current_level >= 50) {
+      await createAchievement({
+        user_id: user.id,
+        badge_type: 'level_50',
+        earned_at: new Date().toISOString(),
+      });
+      toast.success('Achievement unlocked: Level 50! 🎯');
+    }
   }
 
   return {
