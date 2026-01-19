@@ -626,8 +626,11 @@ export default function Dashboard() {
 
   const getTotalPossible = () => {
     if (viewMode === 'weekly') {
-      // Total possible = number of habits × number of days in week
-      return habits.length * weekDays.length;
+      // Total possible = sum of times_per_week for all habits
+      // Each habit has a times_per_week value (default 7 if not set)
+      return habits.reduce((total, habit) => {
+        return total + (habit.times_per_week || 7);
+      }, 0);
     } else {
       // Total possible = number of habits for the day
       return habits.length;
