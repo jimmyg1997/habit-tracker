@@ -1307,20 +1307,24 @@ export default function WeeklyView({
                   
                   const todayIndex = weekDays.findIndex(day => isSameDay(day, new Date()));
                   
-                  // Calculate left offset: Habit (180) + Est (70) + Act (60) + % (60) + Priority (70 if shown) + KPI (60 if shown) + day columns before today
-                  // Note: Using actual rendered widths from the table
+                  // Calculate left offset based on actual column order in table:
+                  // 1. Habit (180px)
+                  // 2. Priority (70px) - if shown
+                  // 3. KPI (60px) - if shown
+                  // 4. Est. (70px)
+                  // 5. Act. (60px)
+                  // 6. % (60px)
+                  // 7. Day columns (50px each)
                   const habitColWidth = 180;
+                  const priorityColWidth = showAdvancedColumns[category] ? 70 : 0;
+                  const kpiColWidth = showAdvancedColumns[category] ? 60 : 0;
                   const estColWidth = 70;
                   const actColWidth = 60;
                   const percentColWidth = 60;
-                  const priorityColWidth = showAdvancedColumns[category] ? 70 : 0;
-                  const kpiColWidth = showAdvancedColumns[category] ? 60 : 0;
-                  const dayColWidth = 50; // Standard day column width (all days use 50px, header shows 60px for today but cells use 50px)
+                  const dayColWidth = 50;
                   
                   // Calculate the left position: sum of all columns before the current day column
-                  // Add small adjustments for borders/padding (approximately 1px per column border)
-                  const borderAdjustment = 0; // Table uses borderCollapse: separate, so borders are included in width
-                  const leftOffset = habitColWidth + estColWidth + actColWidth + percentColWidth + priorityColWidth + kpiColWidth + (todayIndex * dayColWidth) + borderAdjustment;
+                  const leftOffset = habitColWidth + priorityColWidth + kpiColWidth + estColWidth + actColWidth + percentColWidth + (todayIndex * dayColWidth);
                   
                   return (
                     <div
