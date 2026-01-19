@@ -1214,7 +1214,7 @@ export default function WeeklyView({
                     })}
                     {/* Quick Add Row */}
                     <tr className={`border-t-2 border-dashed ${categoryColor.border} bg-gradient-to-br ${categoryColor.bg} dark:bg-gradient-to-br ${categoryColor.dark}`}>
-                      <td colSpan={6 + weekDays.length} className={`px-3 py-2 bg-gradient-to-br ${categoryColor.bg} dark:bg-gradient-to-br ${categoryColor.dark}`}>
+                      <td colSpan={(showAdvancedColumns ? 8 : 6) + weekDays.length} className={`px-3 py-2 bg-gradient-to-br ${categoryColor.bg} dark:bg-gradient-to-br ${categoryColor.dark}`}>
                         <form
                           onSubmit={(e) => {
                             e.preventDefault();
