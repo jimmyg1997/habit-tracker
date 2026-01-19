@@ -835,7 +835,7 @@ export default function WeeklyView({
               </AnimatePresence>
 
               <div className="overflow-x-auto" style={{ WebkitOverflowScrolling: 'touch', position: 'relative' }}>
-                <table className="w-full min-w-full" style={{ tableLayout: 'auto', borderCollapse: 'separate', borderSpacing: 0, width: '100%' }}>
+                <table className="w-full min-w-full" style={{ tableLayout: 'auto', borderCollapse: 'separate', borderSpacing: 0, width: '100%', position: 'relative' }}>
                   <thead>
                     <tr className={`border-b ${categoryColor.border} bg-gradient-to-br ${categoryColor.bg} dark:bg-gradient-to-br ${categoryColor.dark}`}>
                       <th 
@@ -1171,10 +1171,8 @@ export default function WeeklyView({
                                 key={dateStr}
                                 className={`text-center px-1 py-2 bg-gradient-to-br ${categoryColor.bg} dark:bg-gradient-to-br ${categoryColor.dark} relative`}
                                 style={{ position: 'relative', pointerEvents: 'auto', width: isToday ? '60px' : '50px', minWidth: isToday ? '60px' : '50px', maxWidth: isToday ? '60px' : '50px' }}
+                                data-day-column={isToday ? 'today' : undefined}
                               >
-                                {isToday && (
-                                  <div className="absolute inset-0 ring-2 ring-primary shadow-lg bg-primary/10 dark:bg-primary/20 rounded pointer-events-none" style={{ zIndex: 0 }} />
-                                )}
                                 <div className="flex flex-col items-center gap-0.5 relative z-10">
                                   <motion.button
                                     onClick={() => handleToggle(habit.id, dateStr, !isCompleted)}
@@ -1302,6 +1300,38 @@ export default function WeeklyView({
                     </tr>
                   </tbody>
                 </table>
+                {/* Unified current day highlight - spans entire column */}
+                {(() => {
+                  const todayDay = weekDays.find(day => isSameDay(day, new Date()));
+                  if (!todayDay) return null;
+                  
+                  const todayIndex = weekDays.findIndex(day => isSameDay(day, new Date()));
+                  
+                  // Calculate left offset: Habit (180) + Est (70) + Act (60) + % (60) + Priority (70 if shown) + KPI (60 if shown) + day columns before today
+                  const habitColWidth = 180;
+                  const estColWidth = 70;
+                  const actColWidth = 60;
+                  const percentColWidth = 60;
+                  const priorityColWidth = showAdvancedColumns ? 70 : 0;
+                  const kpiColWidth = showAdvancedColumns ? 60 : 0;
+                  const dayColWidth = 50;
+                  
+                  const leftOffset = habitColWidth + estColWidth + actColWidth + percentColWidth + priorityColWidth + kpiColWidth + (todayIndex * dayColWidth);
+                  
+                  return (
+                    <div
+                      className="absolute pointer-events-none ring-2 ring-primary/50 shadow-lg bg-primary/10 dark:bg-primary/20"
+                      style={{
+                        left: `${leftOffset}px`,
+                        top: 0,
+                        width: '60px',
+                        height: '100%',
+                        borderRadius: '4px',
+                        zIndex: 5,
+                      }}
+                    />
+                  );
+                })()}
               </div>
             </motion.div>
             );
