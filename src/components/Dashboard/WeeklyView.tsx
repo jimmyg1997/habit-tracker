@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { format, startOfWeek, endOfWeek, eachDayOfInterval, isSameDay, addWeeks, subWeeks } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle2, Circle, ChevronLeft, ChevronRight, Calendar, AlertTriangle, Plus, Edit2, X, Trash2, GripVertical, Pencil, Settings, MoreVertical } from 'lucide-react';
@@ -126,6 +126,7 @@ export default function WeeklyView({
   const [showCategoryCreator, setShowCategoryCreator] = useState(false);
   const [showAdvancedColumns, setShowAdvancedColumns] = useState<Record<string, boolean>>({});
   const [habitMenuOpen, setHabitMenuOpen] = useState<string | null>(null);
+  const [todayColumnPositions, setTodayColumnPositions] = useState<Record<string, { left: number; width: number }>>({});
   const [draggedCategory, setDraggedCategory] = useState<string | null>(null);
   const [dragOverCategory, setDragOverCategory] = useState<string | null>(null);
   const [draggedHabit, setDraggedHabit] = useState<Habit | null>(null);
@@ -872,6 +873,26 @@ export default function WeeklyView({
                         return (
                           <th
                             key={day.toISOString()}
+                            ref={isToday ? (el) => {
+                              if (el) {
+                                const table = el.closest('table');
+                                const container = table?.parentElement;
+                                if (table && container) {
+                                  const colRect = el.getBoundingClientRect();
+                                  const containerRect = container.getBoundingClientRect();
+                                  const left = colRect.left - containerRect.left;
+                                  const width = colRect.width;
+                                  
+                                  setTodayColumnPositions(prev => {
+                                    const key = category;
+                                    if (prev[key]?.left !== left || prev[key]?.width !== width) {
+                                      return { ...prev, [key]: { left, width } };
+                                    }
+                                    return prev;
+                                  });
+                                }
+                              }
+                            } : undefined}
                             className={`text-center px-1 py-2 text-xs font-semibold text-gray-700 dark:text-gray-300 bg-gradient-to-br ${categoryColor.bg} dark:bg-gradient-to-br ${categoryColor.dark} relative`}
                             style={{ 
                               width: '50px', 
@@ -880,9 +901,6 @@ export default function WeeklyView({
                               position: 'relative'
                             }}
                           >
-                            {isToday && (
-                              <div className="absolute inset-0 ring-2 ring-primary shadow-lg bg-primary/10 dark:bg-primary/20 rounded pointer-events-none" style={{ zIndex: 1 }} />
-                            )}
                             <div className="font-medium text-[10px] relative z-10">{format(day, 'EEE')}</div>
                             <div className="text-[10px] text-gray-500 dark:text-gray-400 font-normal relative z-10">{format(day, 'd')}</div>
                           </th>
@@ -1305,34 +1323,16 @@ export default function WeeklyView({
                   const todayDay = weekDays.find(day => isSameDay(day, new Date()));
                   if (!todayDay) return null;
                   
-                  const todayIndex = weekDays.findIndex(day => isSameDay(day, new Date()));
-                  
-                  // Calculate left offset based on actual column order in table:
-                  // 1. Habit (180px)
-                  // 2. Priority (70px) - if shown
-                  // 3. KPI (60px) - if shown
-                  // 4. Est. (70px)
-                  // 5. Act. (60px)
-                  // 6. % (60px)
-                  // 7. Day columns (50px each)
-                  const habitColWidth = 180;
-                  const priorityColWidth = showAdvancedColumns[category] ? 70 : 0;
-                  const kpiColWidth = showAdvancedColumns[category] ? 60 : 0;
-                  const estColWidth = 70;
-                  const actColWidth = 60;
-                  const percentColWidth = 60;
-                  const dayColWidth = 50;
-                  
-                  // Calculate the left position: sum of all columns before the current day column
-                  const leftOffset = habitColWidth + priorityColWidth + kpiColWidth + estColWidth + actColWidth + percentColWidth + (todayIndex * dayColWidth);
+                  const position = todayColumnPositions[category];
+                  if (!position) return null;
                   
                   return (
                     <div
                       className="absolute pointer-events-none ring-2 ring-primary/50 shadow-lg bg-primary/10 dark:bg-primary/20"
                       style={{
-                        left: `${leftOffset}px`,
+                        left: `${position.left}px`,
                         top: 0,
-                        width: '50px', // Match the actual cell width
+                        width: `${position.width}px`,
                         height: '100%',
                         borderRadius: '4px',
                         zIndex: 5,
