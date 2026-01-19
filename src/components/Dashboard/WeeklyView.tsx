@@ -883,10 +883,28 @@ export default function WeeklyView({
                                   const left = colRect.left - containerRect.left;
                                   const width = colRect.width;
                                   
+                                  // Calculate height: from header to last habit row (excluding add row)
+                                  const thead = table.querySelector('thead');
+                                  const tbody = table.querySelector('tbody');
+                                  const addRow = tbody?.querySelector('tr:last-child'); // The "Add New Habit" row
+                                  
+                                  let height = 0;
+                                  if (thead && tbody && addRow) {
+                                    const theadRect = thead.getBoundingClientRect();
+                                    const addRowRect = addRow.getBoundingClientRect();
+                                    // Height from top of header to top of add row
+                                    height = addRowRect.top - theadRect.top;
+                                  } else if (thead && tbody) {
+                                    // Fallback: use tbody height if add row not found
+                                    const theadRect = thead.getBoundingClientRect();
+                                    const tbodyRect = tbody.getBoundingClientRect();
+                                    height = tbodyRect.top - theadRect.top;
+                                  }
+                                  
                                   setTodayColumnPositions(prev => {
                                     const key = category;
-                                    if (prev[key]?.left !== left || prev[key]?.width !== width) {
-                                      return { ...prev, [key]: { left, width } };
+                                    if (prev[key]?.left !== left || prev[key]?.width !== width || prev[key]?.height !== height) {
+                                      return { ...prev, [key]: { left, width, height } };
                                     }
                                     return prev;
                                   });
