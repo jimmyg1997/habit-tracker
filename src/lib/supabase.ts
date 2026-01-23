@@ -15,6 +15,12 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     persistSession: true,
     autoRefreshToken: true,
     storageKey: 'habit-tracker-auth',
+    detectSessionInUrl: true,
+  },
+  global: {
+    headers: {
+      'x-client-info': 'habit-tracker-web',
+    },
   },
 });
 
